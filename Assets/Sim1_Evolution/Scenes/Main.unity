@@ -545,12 +545,12 @@ MonoBehaviour:
   foodPrefab: {fileID: 55130360}
   startCreature: {fileID: 1586587986}
   information: {fileID: 1706859401}
-  speciesDistance: 0.16
-  foodAmount: 40
+  speciesDistance: 0.2
+  foodAmount: e803000058020000f40100002c0100006400000064000000640000005000000028000000140000000a0000000a0000000a00000000000000000000000000000000000000000000000a0000000a0000000a000000640000006400000064000000320000001e000000
   foodRange: 40
   creatures: []
   species: []
-  mutationRate: 0.3
+  mutationRate: 0.5
   mutationMinRate: 0.05
   mutationDecreaseCoef: 0.2
 --- !u!4 &636427491
@@ -1104,8 +1104,8 @@ MonoBehaviour:
     size: 1
     sense: 1
   food: 0
-  energy: 10
-  baseEnergy: 10
+  energy: 5
+  baseEnergy: 5
   done: 1
   deathTime: 0
   distance: 45

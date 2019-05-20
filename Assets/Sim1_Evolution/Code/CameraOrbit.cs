@@ -2,24 +2,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraOrbit : MonoBehaviour
+namespace Simulation1
 {
-    public Transform target;
-    public float yPos = 30;
-    public float speed = 5;
-    public float radius = 50;
-
-    void Update()
+    public class CameraOrbit : MonoBehaviour
     {
-        float angle = Time.time * speed * Mathf.Deg2Rad;
+        public Transform target;
+        public float yPos = 30;
+        public float speed = 5;
+        public float radius = 50;
 
-        transform.position = new Vector3(
-            radius * Mathf.Cos(angle),
-            yPos,
-            radius * Mathf.Sin(angle));
+        void Update()
+        {
+            float angle = Time.time * speed * Mathf.Deg2Rad;
 
-        Vector3 point = target != null ? target.position : Vector3.zero;
+            transform.position = new Vector3(
+                radius * Mathf.Cos(angle),
+                yPos,
+                radius * Mathf.Sin(angle));
 
-        transform.LookAt(point);
+            Vector3 point = target != null ? target.position : Vector3.zero;
+
+            transform.LookAt(point);
+        }
     }
 }

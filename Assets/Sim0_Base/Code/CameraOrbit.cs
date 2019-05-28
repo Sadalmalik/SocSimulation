@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Simulation1
+namespace SimulationBase
 {
     public class CameraOrbit : MonoBehaviour
     {

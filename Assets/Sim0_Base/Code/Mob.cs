@@ -14,8 +14,7 @@ namespace SimulationBase
         public event Action<Collider> TriggerEnter;
         public event Action<Collider> TriggerStay;
         public event Action<Collider> TriggerExit;
-
-        public object controller;
+        
         public MobBehaviour behaviour;
 
         private readonly Vector3 bPos = new Vector3(0, 1.5f, 0);

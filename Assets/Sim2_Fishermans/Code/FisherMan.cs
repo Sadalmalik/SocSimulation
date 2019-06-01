@@ -1,71 +1,82 @@
-﻿using UnityEngine;
-using SimulationBase;
+﻿using SimulationBase;
+using System;
+using UnityEngine;
 
 namespace Simulation2
 {
-    public class FisherMan
+    [Serializable]
+    public class FisherManSettings
     {
-        public static float hungerDelay = 10;
-        public static float lifeTime = 100;
-        public static bool stockpile = false;
-        public static int collectLimit = 3;
+        public float lifeTime = 100;
+        public Color fishermanColor = new Color(.85f, .65f, .35f);
+        public float hungerDelay = 10;
+        public bool stockpile = false;
+        public int hungerAmount = 3;
+    }
 
-
-
-        public bool dead = false;
-        private Mob mob_;
+    public class FisherMan : MoveRandomInCircle
+    {
+        public FisherManSettings fishermanSettings;
+        
         private int food = 0;
-        private float deathTime_;
-
-        public FisherMan(Mob mob)
+        //private float deathTime_;
+        private Delay deathDelay_ = new Delay();
+        private Delay hungerDelay_ = new Delay();
+        
+        public override void Init(Mob mob)
         {
-            mob_ = mob;
-            mob_.controller = this;
-            mob_.TriggerStay += HandleTrigger;
-            UpdateDeath();
-            Born();
+            base.Init(mob);
+
+            mob.TriggerEnter += HandleTrigger;
         }
 
-        public void Born()
+        public void Init(FisherManSettings settings)
         {
-            dead = false;
-            deathTime_ = Time.time + lifeTime;
-            mob_.Active = true;
+            fishermanSettings = settings;
+
+            mob.SetColor(settings.fishermanColor);
+
+            deathDelay_.Set(settings.lifeTime);
+            hungerDelay_.Set(settings.hungerDelay);
         }
 
-        public void Kill()
+        public override void Reset()
         {
-            dead = true;
-            mob_.Active = false;
+            base.Reset();
+
+            deathDelay_.Start();
+            hungerDelay_.Start();
         }
 
-        public void FixedUpdate()
+        public override void Tick()
         {
-            if (deathTime_ < Time.time)
+            base.Tick();
+
+            if (!alive) return;
+
+            if (deathDelay_.IsComplete())
                 Kill();
-            if (dead) return;
 
-            if (ReadyToDeath())
+            if (hungerDelay_.IsComplete())
             {
                 if (food > 0)
                 {
-                    food--;
-                    UpdateDeath();
+                    //  Съедаем всё
+                    food = 0;// Mathf.Max(food - fishermanSettings.hungerAmount, 0);
+
+                    hungerDelay_.Start();
                 }
                 else Kill();
             }
         }
-
-        private bool ReadyToDeath() { return deathTime_ < Time.time; }
-        private void UpdateDeath() { deathTime_ = Time.time + hungerDelay; }
-
+        
         private void HandleTrigger(Collider other)
         {
-            if (stockpile || food < collectLimit)
+            if (fishermanSettings.stockpile || food < fishermanSettings.hungerAmount)
             {
                 Mob mob = other.GetComponent<Mob>();
                 if (mob == null) return;
-                Fish fish = mob.controller as Fish;
+                Fish fish = mob.behaviour as Fish;
                 if (fish == null) return;
                 fish.Kill();
                 food++;

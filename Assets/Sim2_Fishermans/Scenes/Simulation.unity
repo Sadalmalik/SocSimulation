@@ -143,17 +143,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   text: {fileID: 1602949981}
   prefab: {fileID: 366003286400726125, guid: cf42e90df0c812c4aa1e08c513b52b9e, type: 3}
-  fishColor: {r: 0.3972944, g: 0.8650888, b: 0.9056604, a: 1}
-  fishermanColor: {r: 0.7924528, g: 0.43231842, b: 0.12335351, a: 1}
-  StartFishCount: 30
-  FishLifeTime: 30
-  ReproductionDelay: 10
-  StartFishermanCount: 5
-  FishermanLifetime: 100
-  FishermanNeed: 3
-  FishermanHungerTime: 10
-  Stockpile: 0
-  radius: 45
+  fishMobSettings:
+    size: 0.4
+    sense: 1
+  fishMotionSettings:
+    speed: 2
+    range: 45
+    angle: 15
+  fishSettings:
+    lifeTime: 30
+    fishColor: {r: 0.20784311, g: 0.8980392, b: 0.82927537, a: 1}
+    reproductionDelay: 5
+    reproductionAmount: 3
+  startFishCount: 20
+  fishermanMobSettings:
+    size: 1.2
+    sense: 2
+  fishermanMotionSettings:
+    speed: 1
+    range: 45
+    angle: 15
+  fisherManSettings:
+    lifeTime: 100
+    fishermanColor: {r: 0.8207547, g: 0.5061067, b: 0.13550194, a: 1}
+    hungerDelay: 10
+    stockpile: 0
+    hungerAmount: 3
+  startFishermanCount: 5
+  spawnRadius: 40
 --- !u!4 &287105073
 Transform:
   m_ObjectHideFlags: 0

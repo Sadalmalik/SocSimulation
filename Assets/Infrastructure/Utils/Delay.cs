@@ -2,23 +2,40 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Delay
+public struct Delay
 {
     private float endTime_;
-    public float time;
+    private float delay_;
 
-    public Delay(float time=1)
+    public Delay(float delay = 1)
     {
-        this.time = time;
+        endTime_ = float.MaxValue;
+        delay_ = delay;
     }
 
-    public void Start()
+    public void Set(float delay, bool restart=true)
     {
-        endTime_ = Time.time + time;
+        delay_ = delay;
+        if (restart) Start();
+    }
+
+    public void Start(float extra=0)
+    {
+        endTime_ = Time.time + delay_ + extra;
     }
 
     public bool IsComplete()
     {
         return endTime_ < Time.time;
+    }
+
+    public void AddTime(float time)
+    {
+        endTime_ += time;
+    }
+
+    public void Stop()
+    {
+        this.endTime_ = float.MaxValue;
     }
 }

@@ -4,67 +4,76 @@ using UnityEngine;
 
 namespace Simulation2
 {
-    public class Fish
+    [Serializable]
+    public class FishSettings
     {
-        public static Action<Vector3> CreateFish;
+        public float lifeTime = 30;
+        public Color fishColor = new Color(.35f, .85f, .65f);
+        public float reproductionDelay = 5;
+        public int reproductionAmount = 3;
+    }
 
-        public static float reproductionDelay = 10;
-        public static float lifeTime = 50;
-        public static int reproduceAmount = 2;
+    public class Fish : MoveRandomInCircle
+    {
+        public FishSettings fishSettings;
 
-
-        public bool dead;
-        private Mob mob_;
-        private float deathTime_;
-        private float reproduceTime_;
-
-        public Mob Mob { get { return mob_; } }
-
-        public Fish(Mob mob)
+        private Delay deathDelay_ = new Delay();
+        private Delay reproduceDelay_ = new Delay();
+        
+        public override void Init(Mob mob)
         {
-            mob_ = mob;
-            mob_.controller = this;
-            mob_.TriggerStay += HandleTrigger;
-            Born();
+            base.Init(mob);
+
+            mob.TriggerEnter += HandleTrigger;
         }
 
-        public void Born()
+        public void Init(FishSettings settings)
         {
-            dead = false;
-            deathTime_ = Time.time + lifeTime;
-            mob_.Active = true;
-            UpdateReproduction(.35f);
+            fishSettings = settings;
+
+            mob.SetColor(settings.fishColor);
+
+            deathDelay_.Set(settings.lifeTime);
+            reproduceDelay_.Set(settings.reproductionDelay);
         }
 
-        public void Kill()
+        public override void Reset()
         {
-            dead = true;
-            mob_.Active = false;
+            base.Reset();
+
+            deathDelay_.Start();
+            reproduceDelay_.Start(0.35f);
         }
 
-        public void FixedUpdate()
+        public override void Tick()
         {
-            if (deathTime_ < Time.time)
+            base.Tick();
+
+            if (deathDelay_.IsComplete())
                 Kill();
         }
-
-        private bool ReadyToReproduction() { return reproduceTime_ < Time.time; }
-        private void UpdateReproduction(float coef=1) { reproduceTime_ = Time.time + reproductionDelay * coef; }
-
+        
         private void HandleTrigger(Collider other)
         {
-            if (ReadyToReproduction())
+            if (reproduceDelay_.IsComplete())
             {
                 Mob mob = other.GetComponent<Mob>();
                 if (mob == null) return;
-                Fish fish = mob.controller as Fish;
-                if (fish != null && fish.ReadyToReproduction())
+                Fish fish = mob.behaviour as Fish;
+                if (fish != null && fish.reproduceDelay_.IsComplete())
                 {
-                    this.UpdateReproduction();
-                    fish.UpdateReproduction();
+                    this.reproduceDelay_.Start();
+                    fish.reproduceDelay_.Start();
 
-                    for (int i = 0; i < reproduceAmount; i++)
-                        CreateFish(mob_.transform.position);
+                    for (int i = 0; i < fishSettings.reproductionAmount; i++)
+                    {
+                        Fish newFish = MobsManager.instance.CreateMob<Fish>();
+                        Vector2 offset = UnityEngine.Random.insideUnitCircle;
+                        newFish.mob.transform.position = mob.transform.position + new Vector3(offset.x, 0, offset.y);
+                        newFish.Init(mobSettings);
+                        newFish.Init(moveSettings);
+                        newFish.Init(fishSettings);
+                    }
                 }
             }
         }

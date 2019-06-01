@@ -9,119 +9,85 @@ namespace Simulation2
     {
         public Text text;
         public Mob prefab;
-        public Color fishColor = new Color(.35f, .85f, .65f);
-        public Color fishermanColor = new Color(.85f, .65f, .35f);
+
+        [Header("Параметры рыб")]
         [Header("Параметры симуляции")]
         [Space(10)]
-        public int StartFishCount = 100;
-        public float FishLifeTime = 30;
-        public float ReproductionDelay = 10;
-        public int ReproduceAmount = 2;
+        public MobSettings fishMobSettings;
+        public MoveRandomInCircleSettings fishMotionSettings;
+        public FishSettings fishSettings;
+        public int startFishCount = 20;
 
+        [Header("Параметры рыбаков")]
         [Space(10)]
-        public int StartFishermanCount = 5;
-        public float FishermanLifetime = 100;
-        public int FishermanNeed = 3;
-        public int FishermanHungerTime = 10;
-        public bool Stockpile = false;
-        
+        public MobSettings fishermanMobSettings;
+        public MoveRandomInCircleSettings fishermanMotionSettings;
+        public FisherManSettings fisherManSettings;
+        public int startFishermanCount = 5;
+
+        [Header("Прочее")]
         [Space(10)]
-        public float radius = 45;
+        public float spawnRadius = 40;
 
-        private Pool<Fish> fishPool;
-        private Pool<FisherMan> fishermanPool;
+        private MobsManager mobsManager_;
 
-        private List<Fish> fishs;
-        private List<FisherMan> fishermans;
+        private Delay infoDelay_ = new Delay();
 
         void Start()
         {
-            fishs = new List<Fish>();
-            fishermans = new List<FisherMan>();
+            infoDelay_.Start();
 
-            fishPool = new Pool<Fish>(
-                    () => new Fish(CreateMob(0.4f, 1, 2, fishColor)));
+            mobsManager_ = MobsManager.instance;
+            mobsManager_.prefab = prefab;
 
-            fishermanPool = new Pool<FisherMan>(
-                () => new FisherMan(CreateMob(1.2f, 2, 1, fishermanColor)));
+            for (int i = 0; i < startFishCount; i++)
+            {
+                Fish newFish = MobsManager.instance.CreateMob<Fish>();
+                Vector2 offset = Random.insideUnitCircle * spawnRadius;
+                newFish.mob.transform.position = new Vector3(offset.x, 0, offset.y);
+                newFish.Init(fishMobSettings);
+                newFish.Init(fishMotionSettings);
+                newFish.Init(fishSettings);
+            }
 
-            Fish.CreateFish = CreateFish;
-
-            ApplySettings();
-
-            for (int i = 0; i < StartFishCount; i++)
-                fishs.Add(fishPool.Get());
-
-            for (int i=0;i< StartFishermanCount;i++)
-                fishermans.Add(fishermanPool.Get());
+            for (int i=0;i< startFishermanCount; i++)
+            {
+                FisherMan newFisherman = MobsManager.instance.CreateMob<FisherMan>();
+                Vector2 offset = Random.insideUnitCircle * spawnRadius;
+                newFisherman.mob.transform.position = new Vector3(offset.x, 0, offset.y);
+                newFisherman.Init(fishermanMobSettings);
+                newFisherman.Init(fishermanMotionSettings);
+                newFisherman.Init(fisherManSettings);
+            }
         }
-
-        private void CreateFish(Vector3 position)
-        {
-            var fish = fishPool.Get();
-            fish.Mob.transform.position = position;
-            fish.Born();
-            fishs.Add(fish);
-        }
-
-        private Mob CreateMob(float size = 1, float sense = 1, float speed = 1, Color color = default)
-        {
-            Mob mob = GameObject.Instantiate<Mob>(prefab);
-            mob.ApplyParams(size, sense);
-            mob.SetColor(color);
-            MoveRandomInCircle behaviour = mob.gameObject.AddComponent<MoveRandomInCircle>();
-            behaviour.mob = mob;
-            behaviour.speed = speed;
-            behaviour.range = radius;
-            Vector3 position = UnityEngine.Random.insideUnitCircle * radius;
-            behaviour.transform.position = new Vector3(position.x, 0, position.y);
-            return mob;
-        }
-
+        
         //====================================================================================================//
 
         private void FixedUpdate()
         {
-            ApplySettings();
+            mobsManager_.Tick();
 
-            foreach (var mob in fishs)
-                mob.FixedUpdate();
-
-            foreach (var mob in fishermans)
-                mob.FixedUpdate();
-            
-            for (int i = fishs.Count - 1; i >= 0; i--)
-                if (fishs[i].dead)
-                {
-                    fishPool.Free(fishs[i]);
-                    fishs.RemoveAt(i);
-                }
-
-            for (int i = fishermans.Count - 1; i >= 0; i--)
-                if (fishermans[i].dead)
-                {
-                    fishermanPool.Free(fishermans[i]);
-                    fishermans.RemoveAt(i);
-                }
-
-            UpdateInformation();
+            if(infoDelay_.IsComplete())
+            {
+                infoDelay_.Start();
+                UpdateInformation();
+            }
         }
-
-        private void ApplySettings()
-        {
-            Fish.lifeTime = FishLifeTime;
-            Fish.reproductionDelay = ReproductionDelay;
-            Fish.reproduceAmount = ReproduceAmount;
-
-            FisherMan.lifeTime = FishermanLifetime;
-            FisherMan.hungerDelay = FishermanHungerTime;
-            FisherMan.collectLimit = FishermanNeed;
-            FisherMan.stockpile = Stockpile;
-        }
-
+        
         private void UpdateInformation()
         {
-            text.text = string.Format("Simulation statistics:\n\nFish amount: {0}\nFishermans: {1}", fishs.Count, fishermans.Count);
+            int fishCount = 0;
+            int fishermanCount = 0;
+
+            foreach (var mob in mobsManager_.mobs)
+            {
+                if (null != mob as Fish)
+                    fishCount++;
+                if (null != mob as FisherMan)
+                    fishermanCount++;
+            }
+
+            text.text = string.Format("Simulation statistics:\n\nFish amount: {0}\nFishermans: {1}", fishCount, fishermanCount);
         }
     }
 }

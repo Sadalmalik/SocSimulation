@@ -1,21 +1,36 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace SimulationBase
 {
-    public class MoveRandomInCircle : MobBehaviour
+    [Serializable]
+    public class MoveRandomInCircleSettings
     {
+        public static readonly MoveRandomInCircleSettings Default = new MoveRandomInCircleSettings();
+
         public float speed = 1;
         public float range = 45;
         public float angle = 15;
+    }
 
-        public override void FixedUpdate()
+    public class MoveRandomInCircle : MobBehaviour
+    {
+        public MoveRandomInCircleSettings moveSettings = null;
+
+        public void Init(MoveRandomInCircleSettings settings)
         {
-            mob.transform.Translate(Vector3.forward * speed * 10 * Time.fixedDeltaTime);
-            mob.transform.Rotate(Vector3.up, Random.Range(-angle, angle));
+            moveSettings = settings;
+        }
 
-            if (range < mob.transform.position.magnitude)
+        public override void Tick()
+        {
+            if (moveSettings == null) moveSettings = MoveRandomInCircleSettings.Default;
+
+            mob.transform.Translate(Vector3.forward * moveSettings.speed * 10 * Time.fixedDeltaTime);
+            mob.transform.Rotate(Vector3.up, UnityEngine.Random.Range(-moveSettings.angle, moveSettings.angle));
+
+            if (moveSettings.range < mob.transform.position.magnitude)
                 mob.transform.LookAt(Vector3.zero);
         }
     }
